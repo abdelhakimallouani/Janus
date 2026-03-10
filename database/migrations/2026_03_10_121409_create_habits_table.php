@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('habits', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('title',100);
+            $table->text('description')->nullable();
+            $table->enum('frequency',['daily','weekly','monthly']);
+            $table->integer('target_days');
+            $table->string('color')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
