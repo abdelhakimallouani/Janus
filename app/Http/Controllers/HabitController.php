@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Habit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 
 class HabitController extends Controller
 {
@@ -14,7 +13,9 @@ class HabitController extends Controller
      */
     public function index()
     {
-        
+        $habits = Habit::where('user_id', Auth::id())->get();
+
+        return response()->json(['success' => true, 'data' => $habits]);
     }
 
     /**
@@ -38,6 +39,7 @@ class HabitController extends Controller
             'target_days' => $request->target_days,
             'color' => $request->color,
         ]);
+
         return response()->json(['success' => true, 'data' => $habit, 'message' => 'Habit created '], 201);
     }
 
@@ -46,7 +48,12 @@ class HabitController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $habit = Habit::where('user_id', Auth::id())->find($id);
+        if (!$habit) {
+            return response()->json(['success' => false, 'message' => 'Habit not found'], 404);
+        }
+
+        return response()->json(['success' => true, 'data' => $habit]);
     }
 
     /**
@@ -54,7 +61,22 @@ class HabitController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $habit = Habit::where('user_id', Auth::id())->find($id);
+        if (!$habit) {
+            return response()->json(['success' => false, 'message' => 'Habit not found'], 404);
+        }
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'frequency' => 'sometimes|required|string',
+            'target_days' => 'sometimes|required|integer',
+            'color' => 'nullable|string|max:7',
+            'is_active' => 'sometimes|required|boolean',
+        ]);
+        $habit->update($request->all());
+
+        return response()->json(['success' => true, 'data' => $habit]);
     }
 
     /**
@@ -62,6 +84,12 @@ class HabitController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $habit = Habit::where('user_id', Auth::id())->find($id);
+        if (!$habit) {
+            return response()->json(['success' => false, 'message' => 'Habit not found'], 404);
+        }
+        $habit->delete();
+
+        return response()->json(['success' => true, 'message' => 'Habit deleted']);
     }
 }
